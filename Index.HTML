@@ -90,19 +90,39 @@
                 "Bronobyte": 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
             };
 
-            let totalBytes = amount * multipliers[unit];
-            if (totalBytes < 1 && totalBytes > 0) totalBytes = 1;
+            let targetBytes = amount * multipliers[unit];
+            const MAX_MOBILE_BYTES = 50 * 1024 * 1024; // 50MB browser safety cap
+            let isCapped = false;
 
-            if (totalBytes > 50 * 1024 * 1024) {
-                totalBytes = 50 * 1024 * 1024;
-                document.getElementById("status").innerText = "Simulated giant size! Download capped at 50MB for mobile safety.";
+            if (targetBytes > MAX_MOBILE_BYTES) {
+                targetBytes = MAX_MOBILE_BYTES;
+                isCapped = true;
+            }
+
+            if (targetBytes < 1 && targetBytes > 0) targetBytes = 1;
+
+            if (isCapped) {
+                document.getElementById("status").innerText = "Capped at 50MB for mobile safety!";
             } else {
                 document.getElementById("status").innerText = "Generating...";
             }
 
             setTimeout(() => {
-                const chunk = "X".repeat(Math.min(totalBytes, 1024 * 1024));
-                const blob = new Blob([chunk], { type: "text/plain;charset=utf-8" });
+                const chunkMB = 1024 * 1024; // 1MB chunks
+                const oneMegChunk = "X".repeat(chunkMB);
+                let chunks = [];
+
+                let fullChunks = Math.floor(targetBytes / chunkMB);
+                let remainder = targetBytes % chunkMB;
+
+                for (let i = 0; i < fullChunks; i++) {
+                    chunks.push(oneMegChunk);
+                }
+                if (remainder > 0) {
+                    chunks.push("X".repeat(remainder));
+                }
+
+                const blob = new Blob(chunks, { type: "text/plain;charset=utf-8" });
                 const url = URL.createObjectURL(blob);
                 
                 const a = document.createElement("a");
@@ -113,7 +133,8 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
-                document.getElementById("status").innerText = "Done! File downloaded.";
+                let displaySize = (targetBytes >= 1024 * 1024) ? (targetBytes / (1024 * 1024)).toFixed(1) + " MB" : targetBytes + " Bytes";
+                document.getElementById("status").innerText = "Done! Downloaded (" + displaySize + ").";
             }, 100);
         }
     </script>
