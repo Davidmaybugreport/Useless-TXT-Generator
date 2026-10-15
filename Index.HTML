@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Useless TXT Generator (Mobile Edition)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh; box-sizing: border-box; }
+        .container { background-color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { margin-top: 0; color: #d93025; font-size: 18px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+        input[type="text"], select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .btn { background-color: #d93025; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background-color: #b5221b; }
+        #status { margin-top: 12px; text-align: center; font-weight: bold; font-size: 12px; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Useless TXT Generator</h2>
+        <div class="form-group">
+            <label>File Name:</label>
+            <input type="text" id="txtFileName" value="UselessFile.txt">
+        </div>
+        <div class="form-group">
+            <label>Amount Value:</label>
+            <input type="text" id="txtAmount" value="10">
+        </div>
+        <div class="form-group">
+            <label>Select Size Unit & Danger Level:</label>
+            <select id="selUnit" onchange="checkDanger()">
+                <optgroup label="--- Useless ---">
+                    <option value="Bit">Bit</option>
+                    <option value="Nibble">Nibble</option>
+                    <option value="Byte">Byte</option>
+                    <option value="Kilobyte">Kilobyte</option>
+                    <option value="Megabyte" selected>Megabyte</option>
+                </optgroup>
+                <optgroup label="--- Kind of dangerous ---">
+                    <option value="Gigabyte">Gigabyte</option>
+                    <option value="Terabyte">Terabyte</option>
+                </optgroup>
+                <optgroup label="--- Dangerously High ---">
+                    <option value="Petabyte">Petabyte</option>
+                    <option value="Zettabyte">Zettabyte</option>
+                </optgroup>
+                <optgroup label="--- It kills your phone ---">
+                    <option value="Yottabyte">Yottabyte</option>
+                    <option value="Bronobyte">Bronobyte</option>
+                </optgroup>
+            </select>
+        </div>
+        <button class="btn" onclick="generateFile()">Generate Useless File</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function checkDanger() {
+            const sel = document.getElementById("selUnit");
+            const unit = sel.value;
+            if (["Petabyte", "Zettabyte", "Yottabyte", "Bronobyte"].includes(unit)) {
+                const confirmed = confirm("Are you sure you want to select this? It can kill your phone!");
+                if (!confirmed) {
+                    sel.value = "Megabyte";
+                }
+            }
+        }
+
+        function generateFile() {
+            let fileName = document.getElementById("txtFileName").value.trim();
+            let amount = parseFloat(document.getElementById("txtAmount").value);
+            let unit = document.getElementById("selUnit").value;
+
+            if (!fileName) { alert("Provide a file name!"); return; }
+            if (!fileName.toLowerCase().endsWith(".txt")) fileName += ".txt";
+            if (isNaN(amount) || amount <= 0) { alert("Provide a valid amount!"); return; }
+
+            let multipliers = {
+                "Bit": 0.125,
+                "Nibble": 0.5,
+                "Byte": 1,
+                "Kilobyte": 1024,
+                "Megabyte": 1024 * 1024,
+                "Gigabyte": 1024 * 1024 * 1024,
+                "Terabyte": 1024 * 1024 * 1024 * 1024,
+                "Petabyte": 1024 * 1024 * 1024 * 1024 * 1024,
+                "Zettabyte": 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+                "Yottabyte": 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+                "Bronobyte": 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+            };
+
+            let totalBytes = amount * multipliers[unit];
+            if (totalBytes < 1 && totalBytes > 0) totalBytes = 1;
+
+            if (totalBytes > 50 * 1024 * 1024) {
+                totalBytes = 50 * 1024 * 1024;
+                document.getElementById("status").innerText = "Simulated giant size! Download capped at 50MB for mobile safety.";
+            } else {
+                document.getElementById("status").innerText = "Generating...";
+            }
+
+            setTimeout(() => {
+                const chunk = "X".repeat(Math.min(totalBytes, 1024 * 1024));
+                const blob = new Blob([chunk], { type: "text/plain;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                document.getElementById("status").innerText = "Done! File downloaded.";
+            }, 100);
+        }
+    </script>
+</body>
+</html>
