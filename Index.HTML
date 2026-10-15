@@ -25,7 +25,7 @@
         </div>
         <div class="form-group">
             <label>Amount Value:</label>
-            <input type="text" id="txtAmount" value="10">
+            <input type="text" id="txtAmount" value="1">
         </div>
         <div class="form-group">
             <label>Select Size Unit & Danger Level:</label>
@@ -91,21 +91,9 @@
             };
 
             let targetBytes = amount * multipliers[unit];
-            const MAX_MOBILE_BYTES = 50 * 1024 * 1024; // 50MB browser safety cap
-            let isCapped = false;
-
-            if (targetBytes > MAX_MOBILE_BYTES) {
-                targetBytes = MAX_MOBILE_BYTES;
-                isCapped = true;
-            }
-
             if (targetBytes < 1 && targetBytes > 0) targetBytes = 1;
 
-            if (isCapped) {
-                document.getElementById("status").innerText = "Capped at 50MB for mobile safety!";
-            } else {
-                document.getElementById("status").innerText = "Generating...";
-            }
+            document.getElementById("status").innerText = "Generating massive file...";
 
             setTimeout(() => {
                 const chunkMB = 1024 * 1024; // 1MB chunks
@@ -133,7 +121,15 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
-                let displaySize = (targetBytes >= 1024 * 1024) ? (targetBytes / (1024 * 1024)).toFixed(1) + " MB" : targetBytes + " Bytes";
+                let displaySize = "";
+                if (targetBytes >= 1024 * 1024 * 1024) {
+                    displaySize = (targetBytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+                } else if (targetBytes >= 1024 * 1024) {
+                    displaySize = (targetBytes / (1024 * 1024)).toFixed(1) + " MB";
+                } else {
+                    displaySize = targetBytes + " Bytes";
+                }
+
                 document.getElementById("status").innerText = "Done! Downloaded (" + displaySize + ").";
             }, 100);
         }
